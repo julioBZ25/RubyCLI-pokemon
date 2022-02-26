@@ -1,58 +1,147 @@
 # require neccesary files
+require_relative "pokedex/pokemons"
+require_relative "pokedex/moves"
+
+module Pokemethods
+  def exp_per_lvl
+    level = @level + 1
+    case @growth_rate
+    when :slow
+      ((5 * (level**3)) / 4.0)
+    when :medium_slow
+      (((6 / 5.0) * (level**3)) - (15 * (level**2)) + (100 * level) - 140)
+    when :medium_fast
+      level**3
+    when :fast
+      (4 / 5 * (level**3))
+    end
+  end
+
+  def init_stats
+    h = { hp: 1, attack: 1, defense: 1, special_attack: 1, special_defense: 1, speed: 1 }
+    h.each do |k|
+      if k == :hp
+        ((((2 * @base_stats[k]) + @ind_stats[k] + @stat_effort[:hp]) * @level / 100) + @level + 10).floor
+      else
+        ((((2 * @base_stats[k]) + @ind_stats[k] + @stat_effort[k]) * @level / 100) + 5).floor
+      end
+    end
+  end
+
+  def add_stat_effort(target)
+    type = target.pokemon.effort_points[:type]
+    amount = target.pokemon.effort_points[:amount]
+    @stat_effort[type] += amount
+  end
+
+  def base_damage(target)
+    move = Pokedex::MOVES[@current_move]
+    var = ((2 * @level) / 5.0) + 2
+    if move[:type] == :normal
+      ((var.floor * @stats[:attack] * move[:power] / target.pokemon.stats[:defense]).floor / 50.0).floor
+    else
+      ((var.floor * @stats[:special_attack] * move[:power] / target.pokemon.stats[:special_defense]).floor / 50.0).floor
+    end
+  end
+
+  def effectiveness(target)
+    move = Pokedex::MOVES[@current_move]
+    effectiveness = Pokedex::TYPE_MULTIPLIER.select { |i| i[:user] == move[:type] }
+    count = 1
+    effectiveness.each do |i|
+      if target.pokemon.type[1].nil?
+        count = i[:multiplier] if target.pokemon.type[0] == i[:target]
+      elsif target.pokemon.type[0] == i[:target] || target.pokemon.type[1] == i[:target]
+        count *= i[:multiplier]
+      end
+    end
+    effec_mssg(count, target)
+    count
+  end
+
+  def effec_mssg(count, target)
+    return puts "It doesn't affect #{target.name}!" if count.zero?
+    return puts "It's super effective!" if count >= 1.5
+    return puts "It doesn't affect #{target.name}!" if count <= 0.5
+  end
+
+  def stats_ind
+    h = { hp: 0, attack: 0, defense: 0, special_attack: 0, special_defense: 0, speed: 0 }
+    h.each { |k, _v| h[k] = rand(1..31) }
+  end
+end
 
 class Pokemon
-  # include neccesary modules
+  include Pokemethods
+  attr_reader :type, :name, :current_move, :stats, :moves, :specie, :effort_points, :base_exp
+  attr_accessor :level, :exp
 
-  # (complete parameters)
-  def initialize
-    # Retrieve pokemon info from Pokedex and set instance variables
-    # Calculate Individual Values and store them in instance variable
-    # Create instance variable with effort values. All set to 0
-    # Store the level in instance variable
-    # If level is 1, set experience points to 0 in instance variable.
-    # If level is not 1, calculate the minimum experience point for that level and store it in instance variable.
-    # Calculate pokemon stats and store them in instance variable
+  def initialize(poke_specie, poke_name, poke_lvl = 1)
+    poke_details = Pokedex::POKEMONS[poke_specie]
+    @specie = poke_details[:species]
+    @type = poke_details[:type]
+    @base_exp = poke_details[:base_exp]
+    @growth_rate = poke_details[:growth_rate]
+    @base_stats = poke_details[:base_stats]
+    @effort_points = poke_details[:effort_points]
+    @moves = poke_details[:moves]
+    @name = poke_name.empty? ? poke_specie : poke_name
+    @ind_stats = stats_ind
+    @current_move = nil
+    @effort_value = { hp: 0, attack: 0, defense: 0, special_attack: 0, special_defense: 0, speed: 0 }
+    @level = poke_lvl
+    @exp = @level == 1 ? 0 : exp_per_lvl
+    @stat_effort = { hp: 0, attack: 0, defense: 0, special_attack: 0, special_defense: 0, speed: 0 }
+    @stats = init_stats
   end
 
   def prepare_for_battle
-    # Complete this
+    @health = @stats[:hp]
+    @current_move = nil
   end
 
-  def receive_damage
-    # Complete this
+  def receive_damage(damage)
+    @health -= damage
   end
 
-  def set_current_move
-    # Complete this
+  def set_current_move(move)
+    @current_move = move
   end
 
   def fainted?
-    # Complete this
+    !@health.positive?
   end
 
   def attack(target)
-    # Print attack message 'Tortuguita used MOVE!'
-    # Accuracy check
-    # If the movement is not missed
-    # -- Calculate base damage
-    # -- Critical Hit check
-    # -- If critical, multiply base damage and print message 'It was CRITICAL hit!'
-    # -- Effectiveness check
-    # -- Mutltiply damage by effectiveness multiplier and round down. Print message if neccesary
-    # ---- "It's not very effective..." when effectivenes is less than or equal to 0.5
-    # ---- "It's super effective!" when effectivenes is greater than or equal to 1.5
-    # ---- "It doesn't affect [target name]!" when effectivenes is 0
-    # -- Inflict damage to target and print message "And it hit [target name] with [damage] damage""
-    # Else, print "But it MISSED!"
+    puts "#{@name} used #{current_move}!"
+
+    hits = Pokedex::MOVES[current_move][:accuracy] >= rand(1..100)
+    if hits
+      dmg = base_damage(target).to_i
+      if rand(1..16) == 5
+        dmg *= 1.5
+        puts "It was a CRITICAL hit!"
+      end
+      dmg = (dmg * effectiveness(target)).floor
+      target.pokemon.receive_damage(dmg)
+      puts "And it hit #{target.name} with #{dmg} damage"
+    else
+      puts "But it missed"
+    end
+  end
+
+  def gain_exp(target)
+    (target.pokemon.base_exp * target.pokemon.level / 7.0).floor
   end
 
   def increase_stats(target)
-    # Increase stats base on the defeated pokemon and print message "#[pokemon name] gained [amount] experience points"
+    add_stat_effort(target)
+    @exp = gain_exp(target)
+    puts "#{@name} gained #{gain_exp(target)} experience points"
+    return unless @exp >= exp_per_lvl.floor
 
-    # If the new experience point are enough to level up, do it and print
-    # message "#[pokemon name] reached level [level]!" # -- Re-calculate the stat
+    @level += 1
+    puts "#{@name} reached level #{@level}!"
+    @stats = init_stats
   end
-
-  # private methods:
-  # Create here auxiliary methods
 end
