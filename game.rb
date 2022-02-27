@@ -1,6 +1,9 @@
 require_relative "pokedex/pokemons"
 class Game
   def start
+    # Create a welcome method(s) to get the name, pokemon and pokemon_name from the user
+    
+    # Then create a Player with that information and store it in @player
     puts "#" * 60
     puts ("#" * 14) + (" " * 32) + ("#" * 14)
     puts ("#" * 11) + (" " * 2) + ("-" * 3) + (" " * 8) + "Pokemon Ruby" + (" " * 8) + ("-" * 3) + (" " * 2) + ("#" * 11)
@@ -65,20 +68,6 @@ class Game
       end
       name_pokemon
     end
-
-    #---------barra de menus----------
-    def menu
-      menu = ["Stats", "Train", "Leader", "Exit"]
-      almacena_menu = menu.each.with_index { |a, index| print "#{index + 1}. #{a}        " }
-
-      almacena = ""
-      until almacena_menu.include?(almacena)
-        print ">"
-        almacena = gets.chomp
-      end
-    almacena
-    end
-    
     select = selecciona_pokemon
     puts "Your seleted #{select}. Great choice"
     name_pokemon = inputs_pokemon
@@ -86,44 +75,74 @@ class Game
     When you feel ready you can challenge BROCK, the PEWTER's GYM LEADER"
     puts ""
     puts "#{'-' * 23} Menu #{'-' * 23}"
-    menu
-
-    # Create a welcome method(s) to get the name, pokemon and pokemon_name from the user
-
-    # Then create a Player with that information and store it in @player
-
     # Suggested game flow
-    # action = menu
-    # until action == "Exit"
-    #   case action
-    #   when "Train"
-    #     train
-    #     action = menu
-    #   when "Leader"
-    #     challenge_leader
-    #     action = menu
-    #   when "Stats"
-    #     show_stats
-    #     action = menu
-    #   end
-    # end
+    action = menu
+    until action == "Exit"
+      case action
+      when "Train"
+        train
+        action = menu
+      when "Leader"
+        challenge_leader
+        action = menu
+      when "Stats"
+        show_stats
+        action = menu
+      end
+    end
+    goodbye
+  end
+  
+  def train
+    # Complete this
+    bot = Bot.new(player.pokemon.level)
+    battle = Battle.new(player, bot)
+    battle.start
   end
 
-  # def train
-  #   # Complete this
-  # end
+  def challenge_leader
+    # Complete this
+    bot = Bot.new(10, "Gym Leader Brock")
+    battle = Battle.new(player, bot)
+    battle.start
+  end
 
-  # def challenge_leader
-  #   # Complete this
-  # end
+  def show_stats
+    # Complete this
+    puts "#{player.pokemon.name}:"
+    puts "Kind: #{player.pokemon.species}"
+    puts "Level: #{player.pokemon.level}"
+    puts "Type: #{player.pokemon.type}"
+    stats(player)
+  end
 
-  # def show_stats
-  #   # Complete this
-  # end
+  def goodbye
+    # Complete this
+    puts "Thanks for playing Pokemon Ruby"
+    puts "This game was created with love by: Julio, Eduardo y Manuel"
+  end
 
-  # def goodbye
-  #   # Complete this
-  # end
+  def menu
+    menu = ["Stats", "Train", "Leader", "Exit"]
+    almacena_menu = menu.each.with_index { |a, index| print "#{index + 1}. #{a}        " }
+    almacena = ""
+    until almacena_menu.include?(almacena)
+      print ">"
+      almacena = gets.chomp
+    end
+      almacena
+  end
+
+  def stats(player)
+    puts "Stats:"
+    puts "HP: #{player.pokemon.stats[:hp]}"
+    puts "Attack: #{player.pokemon.stats[:attack]}"
+    puts "Defense: #{player.pokemon.stats[:defense]}"
+    puts "Special Attack: #{player.pokemon.stats[:special_attack]}"
+    puts "Special Defense: #{player.pokemon.stats[:special_defense]}"
+    puts "Speed: #{player.pokemon.stats[:speed]}"
+    puts "Experience Points: #{player.pokemon.exp}"
+  end
 end
 
 game = Game.new
