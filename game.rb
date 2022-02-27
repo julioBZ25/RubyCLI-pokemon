@@ -27,9 +27,6 @@ class Game
 
   def train
     # Complete this
-    bot = Bot.new(player.pokemon.level)
-    battle = Battle.new(player, bot)
-    battle.start
   end
 
   def challenge_leader
