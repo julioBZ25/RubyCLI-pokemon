@@ -4,33 +4,21 @@ require_relative "pokedex/moves"
 
 module Pokemethods
   def exp_per_lvl
-    level = @level + 1
     case @growth_rate
     when :slow
-      ((5 * (level**3)) / 4.0)
+      ((5 * ((@level + 1)**3)) / 4.0)
     when :medium_slow
-      (((6 / 5.0) * (level**3)) - (15 * (level**2)) + (100 * level) - 140)
+      (((6 / 5.0) * ((@level + 1)**3)) - (15 * ((@level + 1)**2)) + (100 * (@level + 1)) - 140)
     when :medium_fast
-      level**3
+      (@level + 1)**3
     when :fast
-      (4 / 5 * (level**3))
-    end
-  end
-
-  def init_stats
-    h = { hp: 1, attack: 1, defense: 1, special_attack: 1, special_defense: 1, speed: 1 }
-    h.each do |k|
-      if k == :hp
-        ((((2 * @base_stats[k]) + @ind_stats[k] + @stat_effort[:hp]) * @level / 100) + @level + 10).floor
-      else
-        ((((2 * @base_stats[k]) + @ind_stats[k] + @stat_effort[k]) * @level / 100) + 5).floor
-      end
+      (4 / 5 * ((@level + 1)**3))
     end
   end
 
   def add_stat_effort(target)
-    type = target.pokemon.effort_points[:type]
-    amount = target.pokemon.effort_points[:amount]
+    type = target.effort_points[:type]
+    amount = target.effort_points[:amount]
     @stat_effort[type] += amount
   end
 
@@ -38,9 +26,9 @@ module Pokemethods
     move = Pokedex::MOVES[@current_move]
     var = ((2 * @level) / 5.0) + 2
     if move[:type] == :normal
-      ((var.floor * @stats[:attack] * move[:power] / target.pokemon.stats[:defense]).floor / 50.0).floor
+      ((var.floor * @stats[:attack] * move[:power] / target.stats[:defense]).floor / 50.0).floor
     else
-      ((var.floor * @stats[:special_attack] * move[:power] / target.pokemon.stats[:special_defense]).floor / 50.0).floor
+      ((var.floor * @stats[:special_attack] * move[:power] / target.stats[:special_defense]).floor / 50.0).floor
     end
   end
 
@@ -49,9 +37,9 @@ module Pokemethods
     effectiveness = Pokedex::TYPE_MULTIPLIER.select { |i| i[:user] == move[:type] }
     count = 1
     effectiveness.each do |i|
-      if target.pokemon.type[1].nil?
-        count = i[:multiplier] if target.pokemon.type[0] == i[:target]
-      elsif target.pokemon.type[0] == i[:target] || target.pokemon.type[1] == i[:target]
+      if target.type[1].nil?
+        count = i[:multiplier] if target.type[0] == i[:target]
+      elsif target.type[0] == i[:target] || target.type[1] == i[:target]
         count *= i[:multiplier]
       end
     end
@@ -73,7 +61,7 @@ end
 
 class Pokemon
   include Pokemethods
-  attr_reader :type, :name, :current_move, :stats, :moves, :specie, :effort_points, :base_exp
+  attr_reader :type, :name, :current_move, :stats, :moves, :specie, :effort_points, :base_exp, :health, :base_stats
   attr_accessor :level, :exp
 
   def initialize(poke_specie, poke_name, poke_lvl = 1)
@@ -123,15 +111,17 @@ class Pokemon
         puts "It was a CRITICAL hit!"
       end
       dmg = (dmg * effectiveness(target)).floor
-      target.pokemon.receive_damage(dmg)
+      target.receive_damage(dmg)
       puts "And it hit #{target.name} with #{dmg} damage"
-    else
-      puts "But it missed"
+      puts "-" * 20
+      return
     end
+    puts "But it missed"
+    puts "-" * 20
   end
 
   def gain_exp(target)
-    (target.pokemon.base_exp * target.pokemon.level / 7.0).floor
+    (target.base_exp * target.level / 7.0).floor
   end
 
   def increase_stats(target)
@@ -143,5 +133,17 @@ class Pokemon
     @level += 1
     puts "#{@name} reached level #{@level}!"
     @stats = init_stats
+  end
+
+  def init_stats
+    h = { hp: 1, attack: 1, defense: 1, special_attack: 1, special_defense: 1, speed: 1 }
+    h.each do |k|
+      value = ((2 * @base_stats[k[0]]) + @ind_stats[k[0]] + @stat_effort[k[0]])
+      if k == :hp
+        h[k[0]] = ((value * @level / 100) + @level + 10).floor
+        next
+      end
+      h[k[0]] = (((value * @level) / 100) + 5).floor
+    end
   end
 end

@@ -12,10 +12,11 @@ class Player
 
   def select_move
     move = ""
-    p moves = @pokemon.moves
+    moves = @pokemon.moves
     until moves.include?(move)
       puts "#{@name}, select your move"
-      moves.each_with_index { |element, index| puts "#{index + 1}. #{element}" }
+      moves.each_with_index { |element, index| print "#{index + 1}. #{element}  " }
+      puts ""
       puts "Select a move to attack:"
       print "> "
       move = gets.chomp # ["scratch", "ember"]
