@@ -27,10 +27,10 @@ end
 
 # Create a class Bot that inherits from Player and override the select_move method
 class Bot < Player
-  def initialize(lvl)
+  def initialize(lvl, bot_name = "Random Traineer")
     poke_specie = Pokedex::POKEMONS.keys.sample
     poke_name = ""
-    super("Random Traineer", poke_specie, poke_name, lvl)
+    super(bot_name, poke_specie, poke_name, lvl)
   end
 
   def select_move
