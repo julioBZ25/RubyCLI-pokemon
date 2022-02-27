@@ -45,6 +45,20 @@ class Game
     puts "Kind: #{player.pokemon.species}"
     puts "Level: #{player.pokemon.level}"
     puts "Type: #{player.pokemon.type}"
+    stats(player)
+  end
+
+  def goodbye
+    # Complete this
+    puts "Thanks for playing Pokemon Ruby"
+    puts "This game was created with love by: Julio, Eduardo y Manuel"
+  end
+
+  def menu
+    # Complete this
+  end
+
+  def stats(player)
     puts "Stats:"
     puts "HP: #{player.pokemon.stats[:hp]}"
     puts "Attack: #{player.pokemon.stats[:attack]}"
@@ -53,14 +67,6 @@ class Game
     puts "Special Defense: #{player.pokemon.stats[:special_defense]}"
     puts "Speed: #{player.pokemon.stats[:speed]}"
     puts "Experience Points: #{player.pokemon.exp}"
-  end
-
-  def goodbye
-    # Complete this
-  end
-
-  def menu
-    # Complete this
   end
 end
 
