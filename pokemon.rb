@@ -126,7 +126,7 @@ class Pokemon
 
   def increase_stats(target)
     add_stat_effort(target)
-    @exp = gain_exp(target)
+    @exp += gain_exp(target)
     puts "#{@name} gained #{gain_exp(target)} experience points"
     return unless @exp >= exp_per_lvl.floor
 
