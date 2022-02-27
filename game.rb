@@ -34,11 +34,25 @@ class Game
 
   def challenge_leader
     # Complete this
-    brock = Bot.new(player.pokemon.level)
+    bot = Bot.new(10, "Gym Leader Brock")
+    battle = Battle.new(player, bot)
+    battle.start
   end
 
   def show_stats
     # Complete this
+    puts "#{player.pokemon.name}:"
+    puts "Kind: #{player.pokemon.species}"
+    puts "Level: #{player.pokemon.level}"
+    puts "Type: #{player.pokemon.type}"
+    puts "Stats:"
+    puts "HP: #{player.pokemon.stats[:hp]}"
+    puts "Attack: #{player.pokemon.stats[:attack]}"
+    puts "Defense: #{player.pokemon.stats[:defense]}"
+    puts "Special Attack: #{player.pokemon.stats[:special_attack]}"
+    puts "Special Defense: #{player.pokemon.stats[:special_defense]}"
+    puts "Speed: #{player.pokemon.stats[:speed]}"
+    puts "Experience Points: #{player.pokemon.exp}"
   end
 
   def goodbye
