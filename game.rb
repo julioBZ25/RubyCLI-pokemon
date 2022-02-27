@@ -3,9 +3,9 @@
 class Game
   def start
     # Create a welcome method(s) to get the name, pokemon and pokemon_name from the user
-
+    
     # Then create a Player with that information and store it in @player
-
+    
     # Suggested game flow
     action = menu
     until action == "Exit"
