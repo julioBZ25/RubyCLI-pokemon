@@ -6,13 +6,13 @@ module Pokemethods
   def exp_per_lvl
     case @growth_rate
     when :slow
-      ((5 * ((@level + 1)**3)) / 4.0)
+      ((5 * ((@level + 1)**3)) / 4.0).floor
     when :medium_slow
-      (((6 / 5.0) * ((@level + 1)**3)) - (15 * ((@level + 1)**2)) + (100 * (@level + 1)) - 140)
+      (((6 / 5.0) * ((@level + 1)**3)) - (15 * ((@level + 1)**2)) + (100 * (@level + 1)) - 140).floor
     when :medium_fast
-      (@level + 1)**3
+      ((@level + 1)**3).floor
     when :fast
-      (4 / 5 * ((@level + 1)**3))
+      (4 / 5 * ((@level + 1)**3)).floor
     end
   end
 
@@ -126,7 +126,7 @@ class Pokemon
 
   def increase_stats(target)
     add_stat_effort(target)
-    @exp += gain_exp(target)
+    @exp += gain_exp(target).floor
     puts "#{@name} gained #{gain_exp(target)} experience points"
     return unless @exp >= exp_per_lvl.floor
 

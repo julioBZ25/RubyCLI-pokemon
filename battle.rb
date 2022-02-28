@@ -30,7 +30,7 @@ class Battle
       second.attack(first) unless second.fainted?
 
     end
-    end_battle(@player_poke, @bot_poke)
+    end_battle(@player_poke, @bot_poke, @bot)
   end
 
   def select_first(player_poke, bot_poke)
@@ -68,20 +68,21 @@ class Battle
     gets.chomp
   end
 
-  def end_battle(player_poke, bot_poke)
+  def end_battle(player_poke, bot_poke, bot)
     puts "-" * 20
     winner = player_poke.fainted? ? bot_poke : player_poke
     loser = winner == player_poke ? bot_poke : player_poke
     puts "#{loser.name} FAINTED!"
     puts "-" * 20
     puts "#{winner.name} WINS!"
-    winner.increase_stats(loser) if winner == player_poke
+    if winner == player_poke
+      winner.increase_stats(loser)
+      if bot.name == "Gym Leader Brock"
+        puts "-" * 38
+        puts "Congratulation! You have won the game!"
+        puts "You can continue training your Pokemon if you want"
+      end
+    end
     puts "-------------------Battle Ended!-------------------"
   end
 end
-
-# ash = Player.new("Ash", "Charmander")
-# bot = Bot.new(ash.pokemon.level)
-# bat = Battle.new(ash, bot)
-# bat.start
-# p ash.pokemon.stats
